@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=15
+
+PID=/var/run/gnfagent.pid
+PROG=/root/gnfagent.sh
+
+start() {
+    echo Starting GNF Agent
+    start-stop-daemon -S -x $PROG -b -m -p $PID
+}
+
+stop() {
+    echo Stopping GNF Agent
+    start-stop-daemon -p $PID -K
+}

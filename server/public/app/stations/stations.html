@@ -1,0 +1,90 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Properties</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Overall Utilization</h4>
+                        <canvas class="chart chart-line" chart-data="vm.utilization.data" chart-labels="vm.utilization.labels" chart-series="vm.utilization.series" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Stations Status</h4>
+                        <canvas class="chart chart-doughnut" chart-data="vm.stationsStatus.data" chart-labels="vm.stationsStatus.labels" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Clients Status</h4>
+                        <canvas class="chart chart-doughnut" chart-data="vm.clientsStatus.data" chart-labels="vm.clientsStatus.labels" chart-legend="true"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Stations</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Status</th>
+                            <th>SSID</th>
+                            <th>BSSID</th>
+                            <th>Vendor</th>
+                            <th># Attached Clients</th>
+                            <th># Installed NFs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ui-sref="stations.device({ bssid: bssid })" ng-repeat-start="(bssid, station) in vm.stations">
+                            <td>{{$index+1}}</td>
+                            <td><i class="fa" ng-class="{ 'fa-check text-success': station.connected, 'fa-times-circle-o text-danger': !station.connected }"></i></td>
+                            <td>{{station.ssid}}</td>
+                            <td>{{station.bssid | uppercase}}</td>
+                            <td>{{station.bssid | macvendor}}</td>
+                            <td>{{station.clients.length}}</td>
+                            <td>{{vm.countAssociatedPolicies(station)}}</td>
+                        </tr>
+                        <tr ng-repeat-end>
+                            <td><strong>Clients</strong></td>
+                            <td colspan="6">
+                                <table style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Status</th>
+                                            <th>MAC Address</th>
+                                            <th>Vendor</th>
+                                            <th>Last Event</th>
+                                            <th># NFs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="client in station.clients">
+                                            <td>{{$index + 1}}</td>
+                                            <td><i class="fa" ng-class="{ 'fa-check text-success': client.connected, 'fa-times-circle-o text-danger': !client.connected }"></i></td>
+                                            <td>{{client.mac | uppercase}}</td>
+                                            <td>{{client.mac | macvendor}}</td>
+                                            <td>{{client.last_event | date:'short'}}</td>
+                                            <td>{{client.policies.length}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

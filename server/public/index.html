@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>GNF - Netlab</title>
+
+        <link rel="stylesheet" href="styles/core.css" media="screen" title="no title" charset="utf-8">
+    </head>
+    <body ng-app="app" ng-strict-di>
+        <nl-navbar></nl-navbar>
+        <div class="container-fluid" ng-class='{ fullscreen: fullscreen }' ui-view></div>
+
+        <footer class="footer">
+          <div class="container-fluid">
+            <p class="text-muted text-right"><a href="https://netlab.dcs.gla.ac.uk">Networked Systems Research Laboratory</a> - University of Glasgow - 2016</p>
+          </div>
+        </footer>
+
+        <script src="bower_components/angular/angular.js" charset="utf-8"></script>
+        <script src="bower_components/angular-resource/angular-resource.min.js" charset="utf-8"></script>
+        <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" charset="utf-8"></script>
+        <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js" charset="utf-8"></script>
+        <script src="bower_components/lodash/dist/lodash.min.js" charset="utf-8"></script>
+        <script src="bower_components/Chart.js/Chart.js" charset="utf-8"></script>
+        <script src="bower_components/angular-chart.js/dist/angular-chart.min.js" charset="utf-8"></script>
+        <script src="bower_components/vis/dist/vis.min.js" charset="utf-8"></script>
+        <script src="bower_components/angular-visjs/angular-vis.js" charset="utf-8"></script>
+
+        <script src="app/app.js" charset="utf-8"></script>
+        <script src="app/navbar/navbarDirective.js" charset="utf-8"></script>
+
+        <script src="app/functions/functionsController.js" charset="utf-8"></script>
+        <script src="app/functions/clientFunctionsController.js" charset="utf-8"></script>
+        <script src="app/stations/stationsController.js" charset="utf-8"></script>
+        <script src="app/stations/stationController.js" charset="utf-8"></script>
+        <script src="app/overview/overviewController.js" charset="utf-8"></script>
+
+        <script src="app/macvendorFilter.js" charset="utf-8"></script>
+        <script src="app/clientsService.js" charset="utf-8"></script>
+        <script src="app/policiesService.js" charset="utf-8"></script>
+        <script src="app/stationsService.js" charset="utf-8"></script>
+    </body>
+</html>

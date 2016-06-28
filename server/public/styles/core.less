@@ -1,0 +1,30 @@
+@import "../bower_components/bootstrap/less/bootstrap.less";
+@import "../bower_components/font-awesome/less/font-awesome.less";
+@import "../bower_components/angular-chart.js/angular-chart.less";
+
+@border-radius-base:        0px;
+@border-radius-large:       0px;
+@border-radius-small:       0px;
+
+@fa-font-path: "../bower_components/font-awesome/fonts/";
+
+
+html, body {
+    height: 100%;
+}
+
+.container-fluid {
+    min-height: ~"calc(100% - 72px - 30px)";
+}
+
+.fullscreen {
+    height: ~"calc(100% - 72px - 30px)";
+    overflow: hidden;
+}
+
+@footer-height: 30px;
+.footer {
+  width: 100%;
+  height: @footer-height;
+  background-color: #f5f5f5;
+}

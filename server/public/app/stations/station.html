@@ -1,0 +1,69 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Station Properties - {{vm.station.bssid}} - {{vm.station.ssid}} - {{vm.station.bssid | macvendor}}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <h4 class="text-center">CPU Utilization</h4>
+                        <canvas class="chart chart-line" chart-data="vm.charts.cpu.data" chart-labels="vm.charts.cpu.labels" chart-series="vm.charts.cpu.series" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Memory Utilization</h4>
+                        <canvas class="chart chart-line" chart-data="vm.charts.memory.data" chart-labels="vm.charts.memory.labels" chart-series="vm.charts.memory.series" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Network Utilization</h4>
+                        <canvas class="chart chart-line" chart-data="vm.charts.network.data" chart-labels="vm.charts.network.labels" chart-series="vm.charts.network.series" chart-legend="true"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-repeat="client in vm.station.clients">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{client.mac}} - {{client.mac | macvendor}}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="media" ng-repeat="policy in client.policies" style="margin-bottom: 4em;">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object" ng-src="{{vm.policies[policy.policy].img}}">
+                        </a>
+                    </div>
+
+                    <div class="media-body">
+                        <h4 class="media-heading">{{vm.policies[policy.policy].name}}</h4>
+
+                        {{vm.policies[policy.policy].description}}
+                        <div style="margin-top: 1em;">
+                            <!-- -->
+                            <span style="margin-right: 2em;">
+                                <span ng-show="policy.active"><i class="fa fa-check text-success"></i> Active</span>
+                                <span ng-show="!policy.active"><i class="fa fa-times-circle-o text-danger"></i> Disabled</span>
+                            </span>
+
+                            <!-- -->
+                            <span ng-if="policy.schedule" style="margin-right: 2em;">
+                                <i class="fa fa-clock-o"></i> Scheduled from {{policy.schedule.start | date:'short'}} - {{policy.schedule.end | date:'short'}}
+                            </span>
+
+                            <!-- -->
+                            <span>
+                                <span class="badge" ng-class="{ 'alert-danger': policy.notifications.length>0 }">{{policy.notifications.length || 0}}</span> Notifications
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

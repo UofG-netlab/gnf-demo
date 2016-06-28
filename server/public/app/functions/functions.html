@@ -1,0 +1,58 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Properties</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Connected Clients</h4>
+                        <canvas class="chart chart-doughnut" chart-data="vm.chartConnected.data" chart-labels="vm.chartConnected.labels" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Active NFs</h4>
+                        <canvas class="chart chart-doughnut" chart-data="vm.activePolicies.data" chart-labels="vm.activePolicies.labels" chart-legend="true"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Clients associated NFs</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Status</th>
+                            <th>MAC Address</th>
+                            <th>Vendor</th>
+                            <th>Station</th>
+                            <th>Last Event</th>
+                            <th># NFs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ui-sref="functions.client({ mac: mac })" ng-repeat="(mac, client) in vm.clients">
+                            <td>{{$index+1}}</td>
+                            <td><i class="fa" ng-class="{ 'fa-check text-success': client.connected, 'fa-times-circle-o text-danger': !client.connected }"></i></td>
+                            <td>{{mac | uppercase}}</td>
+                            <td>{{mac | macvendor}}</td>
+                            <td>{{vm.stations[client.station].ssid}} ({{vm.stations[client.station].bssid}})</td>
+                            <td>{{client.last_event | date:'short'}}</td>
+                            <td>{{client.policies.length}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

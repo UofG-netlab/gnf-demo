@@ -1,0 +1,99 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Client NFs Properties - {{vm.client.mac}} - {{vm.client.mac | macvendor}}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Network Utilization</h4>
+                        <canvas class="chart chart-line" chart-data="vm.charts.network.data" chart-labels="vm.charts.network.labels" chart-series="vm.charts.network.series" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Signal Strength</h4>
+                        <canvas class="chart chart-line" chart-data="vm.charts.signal.data" chart-labels="vm.charts.signal.labels" chart-series="vm.charts.signal.series" chart-legend="true"></canvas>
+                    </div>
+
+                    <div class="col-xs-4">
+                        <h4 class="text-center">Attached NFs</h4>
+                        <canvas class="chart chart-doughnut" chart-data="vm.chartEnabled.data" chart-labels="vm.chartEnabled.labels" chart-legend="true"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Available Network Functions</h3>
+            </div>
+            <div class="panel-body">
+                <div class="media" ng-repeat="(name, policy) in vm.policies">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object" ng-src="{{policy.img}}" style="width: 75px;">
+                        </a>
+                    </div>
+
+                    <div class="media-body">
+                        <div class="pull-left">
+                            <h4 class="media-heading">{{policy.name}} <i class="fa fa-info-circle text-primary" uib-tooltip="{{policy.description}}" tooltip-placement="bottom-left"></i></h4>
+                            <div class="text-muted">{{policy.repository}}</div>
+
+                            <span style="margin-top: 1em;" ng-show="vm.alreadyUsed(name)">Network Function already assigned</span>
+                        </div>
+
+
+                        <button ng-disabled="policy.disabled" ng-click="vm.addPolicy(name, policy)" ng-show="!vm.alreadyUsed(name)" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Currently Associated Network Functions</h3>
+            </div>
+            <div class="panel-body">
+                <div class="media" ng-repeat="policy in vm.client.policies" style="margin-bottom: 4em;">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object" ng-src="{{vm.policies[policy.policy].img}}">
+                        </a>
+                    </div>
+
+                    <div class="media-body">
+                        <span class="pull-right text-muted"><i ng-click="vm.removePolicy(policy.policy)" class="fa fa-trash-o"></i> <i class="fa fa-pencil-square-o"></i></span>
+                        <h4 class="media-heading">{{vm.policies[policy.policy].name}}</h4>
+
+                        {{vm.policies[policy.policy].description}}
+                        <div style="margin-top: 1em;">
+                            <!-- -->
+                            <span style="margin-right: 2em;">
+                                <span ng-show="policy.active"><i class="fa fa-check text-success"></i> Active</span>
+                                <span ng-show="!policy.active"><i class="fa fa-times-circle-o text-danger"></i> Disabled</span>
+                            </span>
+
+                            <!-- -->
+                            <span ng-if="policy.schedule" style="margin-right: 2em;">
+                                <i class="fa fa-clock-o"></i> Scheduled from {{policy.schedule.start | date:'short'}} - {{policy.schedule.end | date:'short'}}
+                            </span>
+
+                            <!-- -->
+                            <span>
+                                <span class="badge" ng-class="{ 'alert-danger': policy.notifications.length>0 }">{{policy.notifications.length || 0}}</span> Notifications
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
