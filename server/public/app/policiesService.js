@@ -26,6 +26,14 @@
                 disabled: true
             },
 
+            parental_control: {
+                repository: 'parental_control',
+                img: 'images/functions/parentalcontrol.png',
+                name: 'Parental control',
+                description: 'Restrict access to specific sites (default: www.facebook.com, richard.systems, sigcomm.org).',
+                disabled: false
+            },
+
             http_filter: {
                 repository: 'http_filter',
                 img: 'images/functions/http_filter.gif',

@@ -7,7 +7,7 @@ import asyncore, socket
 import subprocess
 import wpactrl
 
-SERVER_IP='192.168.0.101'
+SERVER_IP='192.168.0.10'
 SERVER_PORT=12000
 
 def get_cpu_stats():
@@ -132,7 +132,7 @@ class Client(asyncore.dispatcher):
                 'AP-STA-CONNECTED': self.client_connect,
                 'AP-STA-DISCONNECTED': self.client_disconnect
             }[event_name](*args[1:])
-
+            
 
         wpa.detach()
 
@@ -151,10 +151,10 @@ class Client(asyncore.dispatcher):
             'memory': get_mem_stats(),
             'network': get_net_stats(),
             'clients': get_clients_info()
-        }
-
-        self.send_msg(obj)
-
+        } 
+        
+	self.send_msg(obj)
+        
 
     def handle_connect(self):
         obj = {
@@ -175,12 +175,25 @@ class Client(asyncore.dispatcher):
                  return True
         return False
 
+    def parental_control(self, start, client):                                                                                                                                     
+        if start :                                                                                                                                                            
+            # Ensure parentalcontrol.py is running in an other process                                                                                                                
+            if not self.is_running('parentalcontrol.py '+client):                                                                                                                     
+                print 'starting parentalcontrol.py '+ client                                                                                                                          
+                subprocess.Popen(['python', '/root/parentalcontrol.py', client])                                                                                                      
+        else:                                                                                                                                                                 
+            if self.is_running('parentalcontrol.py ' + client):                                                                                                                       
+                p = subprocess.Popen(['pgrep', '-f', client], stdout=subprocess.PIPE)                                                                                         
+                out, err = p.communicate()                                                                                                                                    
+                print 'killing process '+ out                                                                                                                                 
+                subprocess.Popen("kill "+out, shell=True, stdout=subprocess.PIPE)  
+
     def http_filter(self, start, client):
         if start :
             # Ensure sigcomm.py is running in an other process
             if not self.is_running('sigcomm.py '+client):
                 print 'starting sigcomm.py '+ client
-                subprocess.Popen(['python', 'sigcomm.py', client])
+                subprocess.Popen(['python', '/root/sigcomm.py', client])
         else:
             if self.is_running('sigcomm.py ' + client):
                 p = subprocess.Popen(['pgrep', '-f', client], stdout=subprocess.PIPE)
@@ -205,12 +218,14 @@ class Client(asyncore.dispatcher):
 
     def start_function(self, msg):
         { 'ratelimiter': self.rate_limiter,
-          'http_filter': self.http_filter
+          'http_filter': self.http_filter,
+          'parental_control': self.parental_control,
         }[msg['name']](True, msg['client'])
 
-    def stop_function(self, msg):
-        { 'ratelimiter': self.rate_limiter,
-          'http_filter': self.http_filter
+    def stop_function(self, msg):                                                   
+        { 'ratelimiter': self.rate_limiter,                                           
+          'http_filter': self.http_filter,                                            
+          'parental_control': self.parental_control,
         }[msg['name']](False, msg['client'])
 
     def handle_read(self):
@@ -220,7 +235,7 @@ class Client(asyncore.dispatcher):
         for packet in packets:
             if packet:
                 msg = json.loads(packet)
-                {
+                { 
                     'function_add': self.start_function,
                     'function_delete': self.stop_function
                 }[msg['type']](msg)
