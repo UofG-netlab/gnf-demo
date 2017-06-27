@@ -74,8 +74,8 @@
 
         vm.options = {
             autoResize: true,
-            height: '100%',
-            width: '100%'
+            height: '824px',
+            width: '1378px'
         };
 
         vm.data = {
