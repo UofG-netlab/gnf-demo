@@ -6,6 +6,7 @@ import threading
 import asyncore, socket
 import subprocess
 import wpactrl
+import docker
 
 SERVER_IP='192.168.0.10'
 SERVER_PORT=12000
@@ -89,6 +90,8 @@ class Client(asyncore.dispatcher):
         self.wpa_ctrl_thread.daemon = True
         self.wpa_ctrl_thread.start()
 
+        self.docker_client = docker.from_env()
+
     def init_connection(self):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect((SERVER_IP,SERVER_PORT))
@@ -132,7 +135,6 @@ class Client(asyncore.dispatcher):
                 'AP-STA-CONNECTED': self.client_connect,
                 'AP-STA-DISCONNECTED': self.client_disconnect
             }[event_name](*args[1:])
-            
 
         wpa.detach()
 
@@ -151,10 +153,8 @@ class Client(asyncore.dispatcher):
             'memory': get_mem_stats(),
             'network': get_net_stats(),
             'clients': get_clients_info()
-        } 
-        
+        }
 	self.send_msg(obj)
-        
 
     def handle_connect(self):
         obj = {
@@ -175,45 +175,50 @@ class Client(asyncore.dispatcher):
                  return True
         return False
 
-    def parental_control(self, start, client):                                                                                                                                     
-        if start :                                                                                                                                                            
-            # Ensure parentalcontrol.py is running in an other process                                                                                                                
-            if not self.is_running('parentalcontrol.py '+client):                                                                                                                     
-                print 'starting parentalcontrol.py '+ client                                                                                                                          
-                subprocess.Popen(['python', '/root/parentalcontrol.py', client])                                                                                                      
-        else:                                                                                                                                                                 
-            if self.is_running('parentalcontrol.py ' + client):                                                                                                                       
-                p = subprocess.Popen(['pgrep', '-f', client], stdout=subprocess.PIPE)                                                                                         
-                out, err = p.communicate()                                                                                                                                    
-                print 'killing process '+ out                                                                                                                                 
-                subprocess.Popen("kill "+out, shell=True, stdout=subprocess.PIPE)  
+    def is_cont_running(self, cont_name):
+        try:
+            self.docker_client.containers.get(cont_name)
+            return True
+        except docker.errors.NotFound:
+            return False
 
-    def http_filter(self, start, client):
+    def parental_control(self, start, client):
         if start :
-            # Ensure sigcomm.py is running in an other process
-            if not self.is_running('sigcomm.py '+client):
-                print 'starting sigcomm.py '+ client
-                subprocess.Popen(['python', '/root/sigcomm.py', client])
+            # Ensure parentalcontrol.py is running in an other process
+            if not self.is_running('parentalcontrol.py '+client):
+                print 'starting parentalcontrol.py '+ client
+                subprocess.Popen(['python', '/root/parentalcontrol.py', client])
         else:
-            if self.is_running('sigcomm.py ' + client):
+            if self.is_running('parentalcontrol.py ' + client):
                 p = subprocess.Popen(['pgrep', '-f', client], stdout=subprocess.PIPE)
                 out, err = p.communicate()
                 print 'killing process '+ out
                 subprocess.Popen("kill "+out, shell=True, stdout=subprocess.PIPE)
 
-    def rate_limiter(self, start, client):
-        client_list = client.split(':')
-        mac_1='0x'+client_list[0]+client_list[1]
-        mac_2='0x'+client_list[2]+client_list[3]
-        mac_3='0x'+client_list[4]+client_list[5]
-
-        if start:
-            subprocess.Popen(['tc', 'qdisc', 'add', 'dev', 'wlan0', 'root', 'handle', '1:', 'htb', 'default', '20'])
-            subprocess.Popen(['tc', 'class', 'add', 'dev', 'wlan0', 'parent', '1:', 'classid', '1:1', 'htb', 'rate', '5mbit', 'burst', '6k'])
-            subprocess.Popen(['tc', 'filter', 'add', 'dev', 'wlan0', 'parent', '1:', 'protocol', 'ip', 'prio', '5', 'u32', 'match', 'u16', '0x0800', '0xFFFF', 'at', '-2',
-                              'match', 'u16', mac_1, '0xFFFF', 'at', '-14', 'match', 'u16', mac_2, '0xFFFF', 'at', '-12', 'match', 'u16', mac_3, '0xFFFF', 'at', '-10', 'flowid', '1:1'])
+    def http_filter(self, start, client):
+        cont_name = "http_filter_" + client
+        if start :
+            if not self.is_cont_running(cont_name):
+                subprocess.Popen(['docker', 'run', '-itd', '--cap-add=NET_ADMIN',
+                    '--env="LOAD_FACTOR=8.0"', '--env="DELAY=2ms"', '--name',
+                    'cont_1', 'glanf/http_filter'])
         else:
-            subprocess.Popen(['tc', 'qdisc', 'del', 'dev', 'wlan0', 'root'])
+            if self.is_cont_running(cont_name):
+                docker_client.containers.remove(cont_name)
+                print 'killing container '+ cont_name
+
+    def rate_limiter(self, start, client):
+        cont_name = "rate_limiter_" + client
+
+        if start :
+            if not self.is_cont_running(cont_name):
+                subprocess.Popen(['docker', 'run', '-itd', '--cap-add=NET_ADMIN',
+                    '--env="LOAD_FACTOR=8.0"', '--env="DELAY=2ms"', '--name',
+                    'cont_1', 'glanf/rate_limiter'])
+        else:
+            if self.is_cont_running(cont_name):
+                docker_client.containers.remove(cont_name)
+                print 'killing container '+ cont_name
 
 
     def start_function(self, msg):
@@ -222,9 +227,9 @@ class Client(asyncore.dispatcher):
           'parental_control': self.parental_control,
         }[msg['name']](True, msg['client'])
 
-    def stop_function(self, msg):                                                   
-        { 'ratelimiter': self.rate_limiter,                                           
-          'http_filter': self.http_filter,                                            
+    def stop_function(self, msg):
+        { 'ratelimiter': self.rate_limiter,
+          'http_filter': self.http_filter,
           'parental_control': self.parental_control,
         }[msg['name']](False, msg['client'])
 
@@ -235,7 +240,7 @@ class Client(asyncore.dispatcher):
         for packet in packets:
             if packet:
                 msg = json.loads(packet)
-                { 
+                {
                     'function_add': self.start_function,
                     'function_delete': self.stop_function
                 }[msg['type']](msg)
